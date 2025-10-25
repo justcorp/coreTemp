@@ -1,0 +1,7 @@
+<!-- res/xml/device_filter.xml -->
+<resources>
+  <!-- 例: CH340 (VID 0x1A86=6790, PID 0x7523=29987) -->
+  <usb-device vendor-id="6790" product-id="29987" />
+  <!-- 分からない場合は class/subclass/protocol で絞ることも可能 -->
+  <!-- <usb-device class="2" subclass="2" protocol="1" /> など -->
+</resources>
