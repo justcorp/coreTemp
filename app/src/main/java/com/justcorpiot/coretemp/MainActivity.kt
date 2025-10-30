@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity(), SerialInputOutputManager.Listener {
             if (intent.action == ACTION_USB_PERMISSION) {
                 val granted = intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)
                 val device = intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)
-                if (granted && device != null) openDevice(device) else append("permission denied\n")
+                if (granted && device != null) openDevice(device) else disp("permission denied\n")
             }
         }
     }
@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity(), SerialInputOutputManager.Listener {
         // 1) デバイス列挙（既に挿さっている場合）
         val drivers = UsbSerialProber.getDefaultProber().findAllDrivers(usbManager)
         if (drivers.isEmpty()) {
-            // append("no usb-serial device\n")
+            // disp("no usb-serial device\n")
             return
         }
 
@@ -84,10 +84,10 @@ class MainActivity : AppCompatActivity(), SerialInputOutputManager.Listener {
 
     private fun openDevice(device: UsbDevice) {
         val driver = UsbSerialProber.getDefaultProber().probeDevice(device) ?: run {
-            append("no driver for device\n"); return
+            disp("no driver for device\n"); return
         }
         val connection = usbManager.openDevice(driver.device) ?: run {
-            append("failed to open device (no permission?)\n"); return
+            disp("failed to open device (no permission?)\n"); return
         }
         port = driver.ports[0].also { p ->
             p.open(connection)
@@ -97,14 +97,16 @@ class MainActivity : AppCompatActivity(), SerialInputOutputManager.Listener {
                 /* stopBits */ UsbSerialPort.STOPBITS_1,
                 /* parity   */ UsbSerialPort.PARITY_NONE
             )
-            append("serial opened\n")
+            p.dtr = true
+            p.rts = true
+            disp("serial opened\n")
 
             // 読み取り(イベント駆動)
-            ioManager = SerialInputOutputManager(p, this)
+            val mgr = SerialInputOutputManager(p, this)
+            ioManager = mgr
             ioExecutor = Executors.newSingleThreadExecutor()
             ioExecutor!!.submit { ioManager }
-
-        }
+         }
     }
 
     override fun onNewData(data: ByteArray) {
@@ -113,10 +115,10 @@ class MainActivity : AppCompatActivity(), SerialInputOutputManager.Listener {
     }
 
     override fun onRunError(e: Exception) {
-        runOnUiThread { append("IO error: ${e.message}\n") }
+        runOnUiThread { disp("IO error: ${e.message}\n") }
     }
 
-    private fun append(s: String) { logView.setText(s) }
+    private fun disp(s: String) { logView.setText(s) }
 
     override fun onDestroy() {
         super.onDestroy()
@@ -137,7 +139,7 @@ class MainActivity : AppCompatActivity(), SerialInputOutputManager.Listener {
     private fun analyzeLine(line: String) {
         // TODO: ここに解析処理
         // 例: CSVパース/正規表現/閾値監視など
-        runOnUiThread { append("[analyze] $line\n") }
+        runOnUiThread { disp("[analyze] $line\n") }
     }
 
     // 改行で区切ってコールバックするフレーマ
