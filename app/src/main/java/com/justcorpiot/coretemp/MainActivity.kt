@@ -14,6 +14,7 @@ import android.hardware.usb.UsbManager
 import android.hardware.usb.UsbDevice
 import android.app.PendingIntent
 import android.os.Build
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.hoho.android.usbserial.driver.*
 import com.hoho.android.usbserial.util.SerialInputOutputManager
 import java.util.concurrent.Executors
@@ -45,6 +46,20 @@ class MainActivity : AppCompatActivity(), SerialInputOutputManager.Listener {
         setContentView(R.layout.activity_main)
 
         logView = findViewById(R.id.textValue)
+
+        // 値の表示位置を背景画像に合わせ込む
+        // WindowMetricsを取得
+        val windowMetrics = windowManager.currentWindowMetrics
+        val bounds = windowMetrics.bounds
+        // 1. TextViewのLayoutParamsをConstraintLayout用にキャストして取得
+        val params = logView.layoutParams as ConstraintLayout.LayoutParams
+        // 2. 座標を変更したいマージンを設定 (例: 左マージンを200ピクセル、上マージンを400ピクセルに設定)
+        // ピクセル単位で直接指定する
+        params.topMargin = bounds.height()/2 - 780
+        // 3. 変更したLayoutParamsをTextViewに再設定して反映させる
+        logView.layoutParams = params
+
+
         usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
 
         // 1) デバイス列挙（既に挿さっている場合）
@@ -146,9 +161,10 @@ class MainActivity : AppCompatActivity(), SerialInputOutputManager.Listener {
         // 例: CSVパース/正規表現/閾値監視など
         val parts: List<String> = line.split(',').map { it.trim() }
         if (parts.size == 3 && parts[2] == "OK") {
-            runOnUiThread { disp("${parts[1]}") }
+            // 温度部分をさらに数値と"C"に分ける
+            val parts1: List<String> = parts[1].split(' ').map{ it.trim() }
+            runOnUiThread { disp("${parts1[0]}") }
         }
-
     }
 
     // 改行で区切ってコールバックするフレーマ
