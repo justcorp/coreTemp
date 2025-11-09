@@ -55,7 +55,8 @@ class MainActivity : AppCompatActivity(), SerialInputOutputManager.Listener {
         val params = logView.layoutParams as ConstraintLayout.LayoutParams
         // 2. 座標を変更したいマージンを設定 (例: 左マージンを200ピクセル、上マージンを400ピクセルに設定)
         // ピクセル単位で直接指定する
-        params.topMargin = bounds.height()/2 - 780
+        params.topMargin = bounds.height()/2 - 740
+        params.leftMargin -= 100
         // 3. 変更したLayoutParamsをTextViewに再設定して反映させる
         logView.layoutParams = params
 
