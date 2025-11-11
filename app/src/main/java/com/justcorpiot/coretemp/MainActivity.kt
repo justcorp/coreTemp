@@ -164,7 +164,23 @@ class MainActivity : AppCompatActivity(), SerialInputOutputManager.Listener {
         if (parts.size == 3 && parts[2] == "OK") {
             // 温度部分をさらに数値と"C"に分ける
             val parts1: List<String> = parts[1].split(' ').map{ it.trim() }
-            runOnUiThread { disp("${parts1[0]}") }
+            // 小数点以下1桁に整形
+            val cvalue: String = formatToOneDecimalPlace(parts1[0])
+            runOnUiThread { disp("${cvalue}") }
+        }
+    }
+
+    fun formatToOneDecimalPlace(inputString: String): String {
+        // 1. 文字列をDoubleに変換
+        val number: Double? = inputString.toDoubleOrNull()
+
+        // 2. 変換が成功した場合、String.format()で整形
+        return if (number != null) {
+            // %.1f は小数点以下1桁（四捨五入）を意味する
+            String.format("%.1f", number)
+        } else {
+            // 変換できなかった場合は元の文字列を返すなど、エラー処理を行う
+            "Invalid Number"
         }
     }
 
